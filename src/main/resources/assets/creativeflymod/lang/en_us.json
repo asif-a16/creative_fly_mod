@@ -1,0 +1,29 @@
+{
+  "itemGroup.creativeflymod": "Example Mod Tab",
+  "block.creativeflymod.example_block": "Example Block",
+  "item.creativeflymod.example_item": "Example Item",
+
+  "creativeflymod.configuration.title": "Creative Fly Mod Configs",
+  "creativeflymod.configuration.section.creativeflymod.common.toml": "Creative Fly Mod Configs",
+  "creativeflymod.configuration.section.creativeflymod.common.toml.title": "Creative Fly Mod Configs",
+  "creativeflymod.configuration.items": "Item List",
+  "creativeflymod.configuration.logDirtBlock": "Log Dirt Block",
+  "creativeflymod.configuration.magicNumberIntroduction": "Magic Number Text",
+  "creativeflymod.configuration.magicNumber": "Magic Number",
+
+  "key.categories.creativeflymod": "Creative Fly Mod",
+  "key.creativeflymod.toggle_flight": "Toggle Creative Flight",
+  "key.creativeflymod.open_profiles": "Open Flight Profiles",
+  "key.creativeflymod.speed_down": "Decrease Flight Speed",
+  "key.creativeflymod.speed_up": "Increase Flight Speed",
+  "key.creativeflymod.speed_reset": "Reset Flight Speed",
+  "hud.creativeflymod.fly_mod_armed": "Fly Mod: ARMED",
+  "hud.creativeflymod.fly_mod_disarmed": "Fly Mod: DISARMED",
+  "hud.creativeflymod.flight_speed": "Flight Speed: %s",
+
+  "screen.creativeflymod.profiles.title": "Creative Fly Profiles",
+  "screen.creativeflymod.profiles.profile_label": "Profiles",
+  "screen.creativeflymod.profiles.name": "Profile Name",
+  "screen.creativeflymod.profiles.speed": "Speed",
+  "screen.creativeflymod.profiles.speed_value": "Speed: %s%%"
+}

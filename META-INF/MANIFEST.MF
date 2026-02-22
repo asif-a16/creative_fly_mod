@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+TweakOrder: -1
+TweakVersion: 75-121
+TweakName: XRay
+TweakAuthor: AmbientOcclusion - DLB
+TweakClass: net.minecraftxray.loader.XRayTweaker
+Main-Class: net.minecraftxray.installer.XRayInstaller
+
