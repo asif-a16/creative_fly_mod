@@ -35,7 +35,7 @@ From the project root on Windows:
 
 Output jar:
 
-- `build/libs/creativeflymod-1.0.0.jar`
+- `build/libs/creativeflymod-1.0.1.jar`
 
 ## Install
 
