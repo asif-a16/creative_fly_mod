@@ -44,13 +44,13 @@ public class CreativeFlyModClient {
     private static final KeyMapping SPEED_DOWN = new KeyMapping(
             "key.creativeflymod.speed_down",
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_LEFT_BRACKET,
+            GLFW.GLFW_KEY_UNKNOWN,
             "key.categories.creativeflymod");
 
     private static final KeyMapping SPEED_UP = new KeyMapping(
             "key.creativeflymod.speed_up",
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_RIGHT_BRACKET,
+            GLFW.GLFW_KEY_UNKNOWN,
             "key.categories.creativeflymod");
 
     private static final KeyMapping SPEED_RESET = new KeyMapping(
@@ -102,6 +102,7 @@ public class CreativeFlyModClient {
     private static boolean jumpKeyWasDown = false;
     private static long statusMessageShownAtMs = 0L;
     private static String statusMessageKey = "";
+    private static String statusMessageText = "";
     private static boolean pendingJoinInitialization = true;
     private static boolean hasStoredSpeedBeforeReset = false;
     private static float storedSpeedBeforeReset = DEFAULT_FLIGHT_SPEED;
@@ -164,6 +165,7 @@ public class CreativeFlyModClient {
         while (TOGGLE_FLIGHT.consumeClick()) {
             flyModEnabled = !flyModEnabled;
             statusMessageKey = flyModEnabled ? "hud.creativeflymod.fly_mod_armed" : "hud.creativeflymod.fly_mod_disarmed";
+            statusMessageText = "";
             statusMessageShownAtMs = System.currentTimeMillis();
 
             if (!flyModEnabled) {
@@ -262,12 +264,14 @@ public class CreativeFlyModClient {
             return;
         }
 
-        boolean showStatusMessage = !statusMessageKey.isEmpty()
+        boolean showStatusMessage = (!statusMessageKey.isEmpty() || !statusMessageText.isEmpty())
                 && (System.currentTimeMillis() - statusMessageShownAtMs) <= STATUS_MESSAGE_DURATION_MS;
 
         int speedTextY = 6;
         if (showStatusMessage) {
-            String statusText = net.minecraft.network.chat.Component.translatable(statusMessageKey).getString();
+            String statusText = !statusMessageText.isEmpty()
+                    ? statusMessageText
+                    : net.minecraft.network.chat.Component.translatable(statusMessageKey).getString();
             event.getGuiGraphics().drawString(minecraft.font, statusText, 6, 6, 0xFFFFFF, true);
             speedTextY = 16;
         }
@@ -358,7 +362,18 @@ public class CreativeFlyModClient {
     private static void activateProfile(int profileIndex) {
         FlyProfileManager.setSelectedProfileIndex(profileIndex);
         refreshSpeedFromSelectedProfile();
+        showProfileSwitchedMessage(profileIndex);
         FlyProfileManager.save();
+    }
+
+    private static void showProfileSwitchedMessage(int profileIndex) {
+        FlyProfileManager.FlyProfile profile = FlyProfileManager.getProfile(profileIndex);
+        int speedPercent = Math.round((profile.speed() / DEFAULT_FLIGHT_SPEED) * 100.0F);
+        statusMessageText = net.minecraft.network.chat.Component
+                .translatable("hud.creativeflymod.profile_switched", profile.name(), speedPercent)
+                .getString();
+        statusMessageKey = "";
+        statusMessageShownAtMs = System.currentTimeMillis();
     }
 
     private static void cycleProfile(int direction) {
