@@ -33,6 +33,7 @@ public class CreativeFlyModClient {
     private static final long STATUS_MESSAGE_DURATION_MS = 1500L;
     private static final double BASE_DISTANCE_PER_TICK = 7.0D;
     private static final double SPRINT_MULTIPLIER = 1.75D;
+    private static final float SPEED_COMPARE_EPSILON = 0.0001F;
 
     private static final KeyMapping TOGGLE_FLIGHT = new KeyMapping(
             "key.creativeflymod.toggle_flight",
@@ -90,6 +91,8 @@ public class CreativeFlyModClient {
     private static long statusMessageShownAtMs = 0L;
     private static String statusMessageKey = "";
     private static boolean pendingJoinInitialization = true;
+    private static boolean hasStoredSpeedBeforeReset = false;
+    private static float storedSpeedBeforeReset = DEFAULT_FLIGHT_SPEED;
 
     public CreativeFlyModClient(ModContainer container, IEventBus modEventBus) {
         // Allows NeoForge to create a config screen for this mod's configs.
@@ -132,6 +135,7 @@ public class CreativeFlyModClient {
             jumpKeyWasDown = false;
             lastJumpTapTimeMs = 0L;
             pendingJoinInitialization = true;
+            hasStoredSpeedBeforeReset = false;
             return;
         }
 
@@ -156,18 +160,31 @@ public class CreativeFlyModClient {
 
         while (SPEED_DOWN.consumeClick()) {
             currentFlightSpeed = Mth.clamp(currentFlightSpeed - SPEED_STEP, MIN_FLIGHT_SPEED, MAX_FLIGHT_SPEED);
+            hasStoredSpeedBeforeReset = false;
             FlyProfileManager.setProfileSpeed(FlyProfileManager.getSelectedProfileIndex(), currentFlightSpeed);
             FlyProfileManager.save();
         }
 
         while (SPEED_UP.consumeClick()) {
             currentFlightSpeed = Mth.clamp(currentFlightSpeed + SPEED_STEP, MIN_FLIGHT_SPEED, MAX_FLIGHT_SPEED);
+            hasStoredSpeedBeforeReset = false;
             FlyProfileManager.setProfileSpeed(FlyProfileManager.getSelectedProfileIndex(), currentFlightSpeed);
             FlyProfileManager.save();
         }
 
         while (SPEED_RESET.consumeClick()) {
-            currentFlightSpeed = DEFAULT_FLIGHT_SPEED;
+            boolean atDefaultSpeed = Math.abs(currentFlightSpeed - DEFAULT_FLIGHT_SPEED) <= SPEED_COMPARE_EPSILON;
+            if (hasStoredSpeedBeforeReset && atDefaultSpeed) {
+                currentFlightSpeed = Mth.clamp(storedSpeedBeforeReset, MIN_FLIGHT_SPEED, MAX_FLIGHT_SPEED);
+                hasStoredSpeedBeforeReset = false;
+            } else {
+                if (!atDefaultSpeed) {
+                    storedSpeedBeforeReset = currentFlightSpeed;
+                    hasStoredSpeedBeforeReset = true;
+                }
+                currentFlightSpeed = DEFAULT_FLIGHT_SPEED;
+            }
+
             FlyProfileManager.setProfileSpeed(FlyProfileManager.getSelectedProfileIndex(), currentFlightSpeed);
             FlyProfileManager.save();
         }
@@ -313,6 +330,7 @@ public class CreativeFlyModClient {
 
     static void refreshSpeedFromSelectedProfile() {
         currentFlightSpeed = Mth.clamp(FlyProfileManager.getSelectedProfileSpeed(), MIN_FLIGHT_SPEED, MAX_FLIGHT_SPEED);
+        hasStoredSpeedBeforeReset = false;
     }
 
     private static void activateProfile(int profileIndex) {
