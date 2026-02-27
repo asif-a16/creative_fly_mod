@@ -25,7 +25,7 @@ public final class FlyProfileManager {
 
     private static final List<FlyProfile> PROFILES = new ArrayList<>();
     private static int selectedProfileIndex = 0;
-    private static boolean autoArmOnJoin = false;
+    private static boolean autoArmOnJoin = true;
 
     private FlyProfileManager() {
     }
@@ -131,7 +131,7 @@ public final class FlyProfileManager {
         PROFILES.add(new FlyProfile("Fast", DEFAULT_FLIGHT_SPEED * 3.0F));
         PROFILES.add(new FlyProfile("Super Fast", DEFAULT_FLIGHT_SPEED * 10.0F));
         selectedProfileIndex = 0;
-        autoArmOnJoin = false;
+        autoArmOnJoin = true;
     }
 
     private static String defaultName(int index) {
