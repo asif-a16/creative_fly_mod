@@ -64,6 +64,24 @@ public class CreativeFlyModClient {
             GLFW.GLFW_KEY_O,
             "key.categories.creativeflymod");
 
+        private static final KeyMapping PROFILE_1 = new KeyMapping(
+            "key.creativeflymod.profile_1",
+            InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_UNKNOWN,
+            "key.categories.creativeflymod");
+
+        private static final KeyMapping PROFILE_2 = new KeyMapping(
+            "key.creativeflymod.profile_2",
+            InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_UNKNOWN,
+            "key.categories.creativeflymod");
+
+        private static final KeyMapping PROFILE_3 = new KeyMapping(
+            "key.creativeflymod.profile_3",
+            InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_UNKNOWN,
+            "key.categories.creativeflymod");
+
     private static boolean flyModEnabled = false;
     private static boolean creativeFlightEnabled = false;
     private static float currentFlightSpeed = DEFAULT_FLIGHT_SPEED;
@@ -71,6 +89,7 @@ public class CreativeFlyModClient {
     private static boolean jumpKeyWasDown = false;
     private static long statusMessageShownAtMs = 0L;
     private static String statusMessageKey = "";
+    private static boolean pendingJoinInitialization = true;
 
     public CreativeFlyModClient(ModContainer container, IEventBus modEventBus) {
         // Allows NeoForge to create a config screen for this mod's configs.
@@ -98,6 +117,9 @@ public class CreativeFlyModClient {
         event.register(SPEED_UP);
         event.register(SPEED_RESET);
         event.register(OPEN_PROFILES);
+        event.register(PROFILE_1);
+        event.register(PROFILE_2);
+        event.register(PROFILE_3);
     }
 
     static void onClientTick(ClientTickEvent.Post event) {
@@ -109,7 +131,14 @@ public class CreativeFlyModClient {
             creativeFlightEnabled = false;
             jumpKeyWasDown = false;
             lastJumpTapTimeMs = 0L;
+            pendingJoinInitialization = true;
             return;
+        }
+
+        if (pendingJoinInitialization) {
+            flyModEnabled = FlyProfileManager.isAutoArmOnJoin();
+            creativeFlightEnabled = false;
+            pendingJoinInitialization = false;
         }
 
         handleJumpDoubleTapToggle(minecraft);
@@ -145,6 +174,18 @@ public class CreativeFlyModClient {
 
         while (OPEN_PROFILES.consumeClick()) {
             minecraft.setScreen(new CreativeFlyProfilesScreen(minecraft.screen));
+        }
+
+        while (PROFILE_1.consumeClick()) {
+            activateProfile(0);
+        }
+
+        while (PROFILE_2.consumeClick()) {
+            activateProfile(1);
+        }
+
+        while (PROFILE_3.consumeClick()) {
+            activateProfile(2);
         }
 
         applyFlyHackState(minecraft, player);
@@ -272,5 +313,11 @@ public class CreativeFlyModClient {
 
     static void refreshSpeedFromSelectedProfile() {
         currentFlightSpeed = Mth.clamp(FlyProfileManager.getSelectedProfileSpeed(), MIN_FLIGHT_SPEED, MAX_FLIGHT_SPEED);
+    }
+
+    private static void activateProfile(int profileIndex) {
+        FlyProfileManager.setSelectedProfileIndex(profileIndex);
+        refreshSpeedFromSelectedProfile();
+        FlyProfileManager.save();
     }
 }

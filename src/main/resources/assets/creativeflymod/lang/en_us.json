@@ -14,6 +14,9 @@
   "key.categories.creativeflymod": "Creative Fly Mod",
   "key.creativeflymod.toggle_flight": "Toggle Creative Flight",
   "key.creativeflymod.open_profiles": "Open Flight Profiles",
+  "key.creativeflymod.profile_1": "Activate Profile 1",
+  "key.creativeflymod.profile_2": "Activate Profile 2",
+  "key.creativeflymod.profile_3": "Activate Profile 3",
   "key.creativeflymod.speed_down": "Decrease Flight Speed",
   "key.creativeflymod.speed_up": "Increase Flight Speed",
   "key.creativeflymod.speed_reset": "Reset Flight Speed",
@@ -25,5 +28,7 @@
   "screen.creativeflymod.profiles.profile_label": "Profiles",
   "screen.creativeflymod.profiles.name": "Profile Name",
   "screen.creativeflymod.profiles.speed": "Speed",
-  "screen.creativeflymod.profiles.speed_value": "Speed: %s%%"
+  "screen.creativeflymod.profiles.speed_value": "Speed: %s%%",
+  "screen.creativeflymod.profiles.auto_arm": "Auto-arm on join: %s",
+  "screen.creativeflymod.profiles.auto_arm_hint": "Automatically arm flight mod when entering a world"
 }

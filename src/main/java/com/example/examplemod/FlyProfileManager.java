@@ -25,6 +25,7 @@ public final class FlyProfileManager {
 
     private static final List<FlyProfile> PROFILES = new ArrayList<>();
     private static int selectedProfileIndex = 0;
+    private static boolean autoArmOnJoin = false;
 
     private FlyProfileManager() {
     }
@@ -53,6 +54,7 @@ public final class FlyProfileManager {
 
             if (data != null) {
                 setSelectedProfileIndex(data.selectedProfileIndex);
+                setAutoArmOnJoin(data.autoArmOnJoin);
             }
         } catch (Exception exception) {
             CreativeFlyMod.LOGGER.warn("Failed to load fly profiles, using defaults", exception);
@@ -62,6 +64,7 @@ public final class FlyProfileManager {
     public static void save() {
         StoredProfiles data = new StoredProfiles();
         data.selectedProfileIndex = selectedProfileIndex;
+        data.autoArmOnJoin = autoArmOnJoin;
         data.profiles = new ArrayList<>();
 
         for (FlyProfile profile : PROFILES) {
@@ -114,12 +117,21 @@ public final class FlyProfileManager {
         return getProfile(selectedProfileIndex).speed;
     }
 
+    public static boolean isAutoArmOnJoin() {
+        return autoArmOnJoin;
+    }
+
+    public static void setAutoArmOnJoin(boolean enabled) {
+        autoArmOnJoin = enabled;
+    }
+
     private static void resetToDefaults() {
         PROFILES.clear();
         PROFILES.add(new FlyProfile("Profile 1", DEFAULT_FLIGHT_SPEED));
         PROFILES.add(new FlyProfile("Fast", DEFAULT_FLIGHT_SPEED * 3.0F));
         PROFILES.add(new FlyProfile("Super Fast", DEFAULT_FLIGHT_SPEED * 10.0F));
         selectedProfileIndex = 0;
+        autoArmOnJoin = false;
     }
 
     private static String defaultName(int index) {
@@ -151,6 +163,7 @@ public final class FlyProfileManager {
 
     private static final class StoredProfiles {
         private int selectedProfileIndex;
+        private boolean autoArmOnJoin;
         private List<StoredProfile> profiles;
     }
 

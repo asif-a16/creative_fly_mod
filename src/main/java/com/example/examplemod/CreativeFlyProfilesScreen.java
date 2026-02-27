@@ -14,6 +14,7 @@ public class CreativeFlyProfilesScreen extends Screen {
 
     private EditBox profileNameBox;
     private SpeedSlider speedSlider;
+    private Button autoArmToggleButton;
     private int selectedProfileIndex;
 
     protected CreativeFlyProfilesScreen(Screen parent) {
@@ -49,6 +50,12 @@ public class CreativeFlyProfilesScreen extends Screen {
 
         speedSlider = addRenderableWidget(new SpeedSlider(centerX - 100, 126, 200, 20));
 
+        autoArmToggleButton = addRenderableWidget(Button.builder(Component.empty(),
+            button -> toggleAutoArmOnJoin())
+            .bounds(centerX - 100, 158, 200, 20)
+            .build());
+        updateAutoArmButtonLabel();
+
         addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> onDone())
                 .bounds(centerX - 100, height - 32, 200, 20)
                 .build());
@@ -81,6 +88,17 @@ public class CreativeFlyProfilesScreen extends Screen {
         Minecraft.getInstance().setScreen(parent);
     }
 
+    private void toggleAutoArmOnJoin() {
+        FlyProfileManager.setAutoArmOnJoin(!FlyProfileManager.isAutoArmOnJoin());
+        updateAutoArmButtonLabel();
+        FlyProfileManager.save();
+    }
+
+    private void updateAutoArmButtonLabel() {
+        String state = FlyProfileManager.isAutoArmOnJoin() ? "[x]" : "[ ]";
+        autoArmToggleButton.setMessage(Component.translatable("screen.creativeflymod.profiles.auto_arm", state));
+    }
+
     @Override
     public void onClose() {
         FlyProfileManager.save();
@@ -97,6 +115,7 @@ public class CreativeFlyProfilesScreen extends Screen {
         guiGraphics.drawString(font, Component.translatable("screen.creativeflymod.profiles.profile_label"), centerX - 154, 34, 0xA0A0A0);
         guiGraphics.drawString(font, Component.translatable("screen.creativeflymod.profiles.name"), centerX - 100, 80, 0xA0A0A0);
         guiGraphics.drawString(font, Component.translatable("screen.creativeflymod.profiles.speed"), centerX - 100, 114, 0xA0A0A0);
+        guiGraphics.drawString(font, Component.translatable("screen.creativeflymod.profiles.auto_arm_hint"), centerX - 100, 146, 0xA0A0A0);
 
         drawProfileButtonLabel(guiGraphics, centerX - 154, 46, 0);
         drawProfileButtonLabel(guiGraphics, centerX - 50, 46, 1);
