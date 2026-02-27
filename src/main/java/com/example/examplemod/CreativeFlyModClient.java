@@ -104,6 +104,7 @@ public class CreativeFlyModClient {
     private static String statusMessageKey = "";
     private static String statusMessageText = "";
     private static boolean pendingJoinInitialization = true;
+    private static boolean pendingAutoArm = false;
     private static boolean hasStoredSpeedBeforeReset = false;
     private static float storedSpeedBeforeReset = DEFAULT_FLIGHT_SPEED;
 
@@ -150,19 +151,41 @@ public class CreativeFlyModClient {
             jumpKeyWasDown = false;
             lastJumpTapTimeMs = 0L;
             pendingJoinInitialization = true;
+            pendingAutoArm = false;
             hasStoredSpeedBeforeReset = false;
+            ServerOptInState.setOptedIn(false);
             return;
         }
 
+        boolean flightAllowed = isFlightAllowed(minecraft);
+
         if (pendingJoinInitialization) {
-            flyModEnabled = FlyProfileManager.isAutoArmOnJoin();
+            pendingAutoArm = FlyProfileManager.isAutoArmOnJoin();
+            flyModEnabled = false;
             creativeFlightEnabled = false;
             pendingJoinInitialization = false;
         }
 
-        handleJumpDoubleTapToggle(minecraft);
+        if (pendingAutoArm && flightAllowed) {
+            flyModEnabled = true;
+            pendingAutoArm = false;
+        }
+
+        if (!flightAllowed) {
+            flyModEnabled = false;
+            creativeFlightEnabled = false;
+        }
+
+        handleJumpDoubleTapToggle(minecraft, flightAllowed);
 
         while (TOGGLE_FLIGHT.consumeClick()) {
+            if (!flightAllowed) {
+                statusMessageKey = "hud.creativeflymod.server_opt_in_required";
+                statusMessageText = "";
+                statusMessageShownAtMs = System.currentTimeMillis();
+                continue;
+            }
+
             flyModEnabled = !flyModEnabled;
             statusMessageKey = flyModEnabled ? "hud.creativeflymod.fly_mod_armed" : "hud.creativeflymod.fly_mod_disarmed";
             statusMessageText = "";
@@ -232,13 +255,13 @@ public class CreativeFlyModClient {
         applyFlyHackState(minecraft, player);
     }
 
-    private static void handleJumpDoubleTapToggle(Minecraft minecraft) {
+    private static void handleJumpDoubleTapToggle(Minecraft minecraft, boolean flightAllowed) {
         if (minecraft.screen != null) {
             jumpKeyWasDown = minecraft.options.keyJump.isDown();
             return;
         }
 
-        if (!flyModEnabled) {
+        if (!flyModEnabled || !flightAllowed) {
             jumpKeyWasDown = minecraft.options.keyJump.isDown();
             lastJumpTapTimeMs = 0L;
             return;
@@ -357,6 +380,10 @@ public class CreativeFlyModClient {
     static void refreshSpeedFromSelectedProfile() {
         currentFlightSpeed = Mth.clamp(FlyProfileManager.getSelectedProfileSpeed(), MIN_FLIGHT_SPEED, MAX_FLIGHT_SPEED);
         hasStoredSpeedBeforeReset = false;
+    }
+
+    private static boolean isFlightAllowed(Minecraft minecraft) {
+        return minecraft.hasSingleplayerServer() || ServerOptInState.isOptedIn();
     }
 
     private static void activateProfile(int profileIndex) {

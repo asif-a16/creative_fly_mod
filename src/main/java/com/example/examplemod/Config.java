@@ -17,6 +17,10 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public class Config {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
+        public static final ModConfigSpec.BooleanValue SERVER_FLIGHT_OPT_IN = BUILDER
+                        .comment("Server-side opt-in for Creative Fly Mod movement features. Required for multiplayer flight.")
+                        .define("serverFlightOptIn", false);
+
     public static final ModConfigSpec.BooleanValue LOG_DIRT_BLOCK = BUILDER
             .comment("Whether to log the dirt block on common setup")
             .define("logDirtBlock", true);
