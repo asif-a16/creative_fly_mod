@@ -31,6 +31,7 @@ public class CreativeFlyModClient {
     private static final float SPEED_STEP = DEFAULT_FLIGHT_SPEED * 0.10F;
     private static final long DOUBLE_TAP_WINDOW_MS = 300L;
     private static final long STATUS_MESSAGE_DURATION_MS = 1500L;
+    private static final int AUTO_ARM_WARNING_DELAY_TICKS = 40;
     private static final double BASE_DISTANCE_PER_TICK = 7.0D;
     private static final double SPRINT_MULTIPLIER = 1.75D;
     private static final float SPEED_COMPARE_EPSILON = 0.0001F;
@@ -107,6 +108,8 @@ public class CreativeFlyModClient {
     private static boolean pendingAutoArm = false;
     private static boolean hasStoredSpeedBeforeReset = false;
     private static float storedSpeedBeforeReset = DEFAULT_FLIGHT_SPEED;
+    private static boolean autoArmBlockedMessageShown = false;
+    private static int autoArmBlockedTicks = 0;
 
     public CreativeFlyModClient(ModContainer container, IEventBus modEventBus) {
         // Allows NeoForge to create a config screen for this mod's configs.
@@ -152,6 +155,8 @@ public class CreativeFlyModClient {
             lastJumpTapTimeMs = 0L;
             pendingJoinInitialization = true;
             pendingAutoArm = false;
+            autoArmBlockedMessageShown = false;
+            autoArmBlockedTicks = 0;
             hasStoredSpeedBeforeReset = false;
             ServerOptInState.setOptedIn(false);
             return;
@@ -164,11 +169,23 @@ public class CreativeFlyModClient {
             flyModEnabled = false;
             creativeFlightEnabled = false;
             pendingJoinInitialization = false;
+            autoArmBlockedTicks = 0;
         }
 
         if (pendingAutoArm && flightAllowed) {
             flyModEnabled = true;
             pendingAutoArm = false;
+            autoArmBlockedMessageShown = false;
+            autoArmBlockedTicks = 0;
+        }
+
+        if (pendingAutoArm && !flightAllowed) {
+            if (autoArmBlockedTicks < AUTO_ARM_WARNING_DELAY_TICKS) {
+                autoArmBlockedTicks++;
+            } else if (!autoArmBlockedMessageShown) {
+                showServerOptInRequiredMessage();
+                autoArmBlockedMessageShown = true;
+            }
         }
 
         if (!flightAllowed) {
@@ -180,9 +197,7 @@ public class CreativeFlyModClient {
 
         while (TOGGLE_FLIGHT.consumeClick()) {
             if (!flightAllowed) {
-                statusMessageKey = "hud.creativeflymod.server_opt_in_required";
-                statusMessageText = "";
-                statusMessageShownAtMs = System.currentTimeMillis();
+                showServerOptInRequiredMessage();
                 continue;
             }
 
@@ -261,13 +276,30 @@ public class CreativeFlyModClient {
             return;
         }
 
-        if (!flyModEnabled || !flightAllowed) {
-            jumpKeyWasDown = minecraft.options.keyJump.isDown();
+        boolean jumpDown = minecraft.options.keyJump.isDown();
+
+        if (!flightAllowed) {
+            if (jumpDown && !jumpKeyWasDown) {
+                long now = System.currentTimeMillis();
+                if (now - lastJumpTapTimeMs <= DOUBLE_TAP_WINDOW_MS) {
+                    showServerOptInRequiredMessage();
+                    lastJumpTapTimeMs = 0L;
+                    jumpKeyWasDown = jumpDown;
+                    return;
+                }
+                lastJumpTapTimeMs = now;
+            }
+
+            jumpKeyWasDown = jumpDown;
+            return;
+        }
+
+        if (!flyModEnabled) {
+            jumpKeyWasDown = jumpDown;
             lastJumpTapTimeMs = 0L;
             return;
         }
 
-        boolean jumpDown = minecraft.options.keyJump.isDown();
         if (jumpDown && !jumpKeyWasDown) {
             long now = System.currentTimeMillis();
             if (now - lastJumpTapTimeMs <= DOUBLE_TAP_WINDOW_MS) {
@@ -386,6 +418,11 @@ public class CreativeFlyModClient {
         return minecraft.hasSingleplayerServer() || ServerOptInState.isOptedIn();
     }
 
+        private static void showServerOptInRequiredMessage() {
+            statusMessageKey = "hud.creativeflymod.server_opt_in_required";
+            statusMessageText = "";
+            statusMessageShownAtMs = System.currentTimeMillis();
+        }
     private static void activateProfile(int profileIndex) {
         FlyProfileManager.setSelectedProfileIndex(profileIndex);
         refreshSpeedFromSelectedProfile();
