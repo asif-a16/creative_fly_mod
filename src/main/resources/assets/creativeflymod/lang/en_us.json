@@ -17,6 +17,8 @@
   "key.creativeflymod.profile_1": "Activate Profile 1",
   "key.creativeflymod.profile_2": "Activate Profile 2",
   "key.creativeflymod.profile_3": "Activate Profile 3",
+  "key.creativeflymod.cycle_profile_forward": "Cycle Profile Forward",
+  "key.creativeflymod.cycle_profile_backward": "Cycle Profile Backward",
   "key.creativeflymod.speed_down": "Decrease Flight Speed",
   "key.creativeflymod.speed_up": "Increase Flight Speed",
   "key.creativeflymod.speed_reset": "Reset Flight Speed",

@@ -83,6 +83,18 @@ public class CreativeFlyModClient {
                 GLFW.GLFW_KEY_UNKNOWN,
             "key.categories.creativeflymod");
 
+            private static final KeyMapping CYCLE_PROFILE_FORWARD = new KeyMapping(
+                "key.creativeflymod.cycle_profile_forward",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_UNKNOWN,
+                "key.categories.creativeflymod");
+
+            private static final KeyMapping CYCLE_PROFILE_BACKWARD = new KeyMapping(
+                "key.creativeflymod.cycle_profile_backward",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_UNKNOWN,
+                "key.categories.creativeflymod");
+
     private static boolean flyModEnabled = false;
     private static boolean creativeFlightEnabled = false;
     private static float currentFlightSpeed = DEFAULT_FLIGHT_SPEED;
@@ -123,6 +135,8 @@ public class CreativeFlyModClient {
         event.register(PROFILE_1);
         event.register(PROFILE_2);
         event.register(PROFILE_3);
+        event.register(CYCLE_PROFILE_FORWARD);
+        event.register(CYCLE_PROFILE_BACKWARD);
     }
 
     static void onClientTick(ClientTickEvent.Post event) {
@@ -203,6 +217,14 @@ public class CreativeFlyModClient {
 
         while (PROFILE_3.consumeClick()) {
             activateProfile(2);
+        }
+
+        while (CYCLE_PROFILE_FORWARD.consumeClick()) {
+            cycleProfile(1);
+        }
+
+        while (CYCLE_PROFILE_BACKWARD.consumeClick()) {
+            cycleProfile(-1);
         }
 
         applyFlyHackState(minecraft, player);
@@ -337,5 +359,11 @@ public class CreativeFlyModClient {
         FlyProfileManager.setSelectedProfileIndex(profileIndex);
         refreshSpeedFromSelectedProfile();
         FlyProfileManager.save();
+    }
+
+    private static void cycleProfile(int direction) {
+        int current = FlyProfileManager.getSelectedProfileIndex();
+        int wrapped = Math.floorMod(current + direction, FlyProfileManager.PROFILE_COUNT);
+        activateProfile(wrapped);
     }
 }
