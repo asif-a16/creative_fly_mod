@@ -24,7 +24,6 @@
   "key.creativeflymod.speed_reset": "Reset Flight Speed",
   "hud.creativeflymod.fly_mod_armed": "Fly Mod: ARMED",
   "hud.creativeflymod.fly_mod_disarmed": "Fly Mod: DISARMED",
-  "hud.creativeflymod.server_opt_in_required": "Server-side opt-in required",
   "hud.creativeflymod.profile_switched": "Profile: %s (%s%%)",
   "hud.creativeflymod.flight_speed": "Flight Speed: %s",
 

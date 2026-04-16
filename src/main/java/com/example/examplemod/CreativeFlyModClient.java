@@ -32,11 +32,10 @@ public class CreativeFlyModClient {
     private static final float SPEED_STEP = DEFAULT_FLIGHT_SPEED * 0.10F;
     private static final long DOUBLE_TAP_WINDOW_MS = 300L;
     private static final long STATUS_MESSAGE_DURATION_MS = 1500L;
-    private static final int AUTO_ARM_WARNING_DELAY_TICKS = 40;
     private static final double BASE_DISTANCE_PER_TICK = 7.0D;
     private static final double SPRINT_MULTIPLIER = 1.75D;
     private static final float SPEED_COMPARE_EPSILON = 0.0001F;
-        private static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category.register(
+    private static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category.register(
             Identifier.fromNamespaceAndPath(CreativeFlyMod.MODID, "creativeflymod"));
 
     private static final KeyMapping TOGGLE_FLIGHT = new KeyMapping(
@@ -69,35 +68,35 @@ public class CreativeFlyModClient {
             GLFW.GLFW_KEY_O,
             KEY_CATEGORY);
 
-        private static final KeyMapping PROFILE_1 = new KeyMapping(
+    private static final KeyMapping PROFILE_1 = new KeyMapping(
             "key.creativeflymod.profile_1",
             InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_UNKNOWN,
+            GLFW.GLFW_KEY_UNKNOWN,
             KEY_CATEGORY);
 
-        private static final KeyMapping PROFILE_2 = new KeyMapping(
+    private static final KeyMapping PROFILE_2 = new KeyMapping(
             "key.creativeflymod.profile_2",
             InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_UNKNOWN,
+            GLFW.GLFW_KEY_UNKNOWN,
             KEY_CATEGORY);
 
-        private static final KeyMapping PROFILE_3 = new KeyMapping(
+    private static final KeyMapping PROFILE_3 = new KeyMapping(
             "key.creativeflymod.profile_3",
             InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_UNKNOWN,
+            GLFW.GLFW_KEY_UNKNOWN,
             KEY_CATEGORY);
 
-            private static final KeyMapping CYCLE_PROFILE_FORWARD = new KeyMapping(
-                "key.creativeflymod.cycle_profile_forward",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_UNKNOWN,
-                KEY_CATEGORY);
+    private static final KeyMapping CYCLE_PROFILE_FORWARD = new KeyMapping(
+            "key.creativeflymod.cycle_profile_forward",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_UNKNOWN,
+            KEY_CATEGORY);
 
-            private static final KeyMapping CYCLE_PROFILE_BACKWARD = new KeyMapping(
-                "key.creativeflymod.cycle_profile_backward",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_UNKNOWN,
-                KEY_CATEGORY);
+    private static final KeyMapping CYCLE_PROFILE_BACKWARD = new KeyMapping(
+            "key.creativeflymod.cycle_profile_backward",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_UNKNOWN,
+            KEY_CATEGORY);
 
     private static boolean flyModEnabled = false;
     private static boolean creativeFlightEnabled = false;
@@ -111,8 +110,6 @@ public class CreativeFlyModClient {
     private static boolean pendingAutoArm = false;
     private static boolean hasStoredSpeedBeforeReset = false;
     private static float storedSpeedBeforeReset = DEFAULT_FLIGHT_SPEED;
-    private static boolean autoArmBlockedMessageShown = false;
-    private static int autoArmBlockedTicks = 0;
 
     public CreativeFlyModClient(ModContainer container, IEventBus modEventBus) {
         // Allows NeoForge to create a config screen for this mod's configs.
@@ -158,52 +155,25 @@ public class CreativeFlyModClient {
             lastJumpTapTimeMs = 0L;
             pendingJoinInitialization = true;
             pendingAutoArm = false;
-            autoArmBlockedMessageShown = false;
-            autoArmBlockedTicks = 0;
             hasStoredSpeedBeforeReset = false;
-            ServerOptInState.setOptedIn(false);
             return;
         }
-
-        boolean flightAllowed = isFlightAllowed(minecraft);
 
         if (pendingJoinInitialization) {
             pendingAutoArm = FlyProfileManager.isAutoArmOnJoin();
             flyModEnabled = false;
             creativeFlightEnabled = false;
             pendingJoinInitialization = false;
-            autoArmBlockedTicks = 0;
         }
 
-        if (pendingAutoArm && flightAllowed) {
+        if (pendingAutoArm) {
             flyModEnabled = true;
             pendingAutoArm = false;
-            autoArmBlockedMessageShown = false;
-            autoArmBlockedTicks = 0;
         }
 
-        if (pendingAutoArm && !flightAllowed) {
-            if (autoArmBlockedTicks < AUTO_ARM_WARNING_DELAY_TICKS) {
-                autoArmBlockedTicks++;
-            } else if (!autoArmBlockedMessageShown) {
-                showServerOptInRequiredMessage();
-                autoArmBlockedMessageShown = true;
-            }
-        }
-
-        if (!flightAllowed) {
-            flyModEnabled = false;
-            creativeFlightEnabled = false;
-        }
-
-        handleJumpDoubleTapToggle(minecraft, flightAllowed);
+        handleJumpDoubleTapToggle(minecraft);
 
         while (TOGGLE_FLIGHT.consumeClick()) {
-            if (!flightAllowed) {
-                showServerOptInRequiredMessage();
-                continue;
-            }
-
             flyModEnabled = !flyModEnabled;
             statusMessageKey = flyModEnabled ? "hud.creativeflymod.fly_mod_armed" : "hud.creativeflymod.fly_mod_disarmed";
             statusMessageText = "";
@@ -273,29 +243,13 @@ public class CreativeFlyModClient {
         applyFlyHackState(minecraft, player);
     }
 
-    private static void handleJumpDoubleTapToggle(Minecraft minecraft, boolean flightAllowed) {
+    private static void handleJumpDoubleTapToggle(Minecraft minecraft) {
         if (minecraft.screen != null) {
             jumpKeyWasDown = minecraft.options.keyJump.isDown();
             return;
         }
 
         boolean jumpDown = minecraft.options.keyJump.isDown();
-
-        if (!flightAllowed) {
-            if (jumpDown && !jumpKeyWasDown) {
-                long now = System.currentTimeMillis();
-                if (now - lastJumpTapTimeMs <= DOUBLE_TAP_WINDOW_MS) {
-                    showServerOptInRequiredMessage();
-                    lastJumpTapTimeMs = 0L;
-                    jumpKeyWasDown = jumpDown;
-                    return;
-                }
-                lastJumpTapTimeMs = now;
-            }
-
-            jumpKeyWasDown = jumpDown;
-            return;
-        }
 
         if (!flyModEnabled) {
             jumpKeyWasDown = jumpDown;
@@ -417,15 +371,6 @@ public class CreativeFlyModClient {
         hasStoredSpeedBeforeReset = false;
     }
 
-    private static boolean isFlightAllowed(Minecraft minecraft) {
-        return minecraft.hasSingleplayerServer() || ServerOptInState.isOptedIn();
-    }
-
-        private static void showServerOptInRequiredMessage() {
-            statusMessageKey = "hud.creativeflymod.server_opt_in_required";
-            statusMessageText = "";
-            statusMessageShownAtMs = System.currentTimeMillis();
-        }
     private static void activateProfile(int profileIndex) {
         FlyProfileManager.setSelectedProfileIndex(profileIndex);
         refreshSpeedFromSelectedProfile();

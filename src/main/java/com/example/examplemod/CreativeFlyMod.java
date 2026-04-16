@@ -16,8 +16,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
@@ -26,11 +24,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -51,18 +45,18 @@ public class CreativeFlyMod {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 
     // Creates a new Block with the id "creativeflymod:example_block", combining the namespace and path
-        public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerBlock(
+    public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerBlock(
             "example_block",
             Block::new,
-                () -> BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
+            () -> BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
     // Creates a new BlockItem with the id "creativeflymod:example_block", combining the namespace and path
     public static final DeferredItem<BlockItem> EXAMPLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_block", EXAMPLE_BLOCK);
 
     // Creates a new food item with the id "creativeflymod:example_id", nutrition 1 and saturation 2
-        public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerItem(
+    public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerItem(
             "example_item",
             Item::new,
-                () -> new Item.Properties().food(new FoodProperties.Builder()
+            () -> new Item.Properties().food(new FoodProperties.Builder()
                     .alwaysEdible().nutrition(1).saturationModifier(2f).build()));
 
     // Creates a creative tab with the id "creativeflymod:example_tab" for the example item, that is placed after the combat tab
@@ -79,7 +73,6 @@ public class CreativeFlyMod {
     public CreativeFlyMod(IEventBus modEventBus, ModContainer modContainer) {
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
-        modEventBus.addListener(this::registerPayloadHandlers);
 
         // Register the Deferred Register to the mod event bus so blocks get registered
         BLOCKS.register(modEventBus);
@@ -98,14 +91,6 @@ public class CreativeFlyMod {
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
-    }
-
-    private void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar("1");
-        registrar.playToClient(
-                ServerFlightOptInPayload.TYPE,
-                ServerFlightOptInPayload.STREAM_CODEC,
-                (payload, context) -> context.enqueueWork(() -> ServerOptInState.setOptedIn(payload.allowed())));
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
@@ -133,12 +118,5 @@ public class CreativeFlyMod {
     public void onServerStarting(ServerStartingEvent event) {
         // Do something when the server starts
         LOGGER.info("HELLO from server starting");
-    }
-
-    @SubscribeEvent
-    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
-            PacketDistributor.sendToPlayer(serverPlayer, new ServerFlightOptInPayload(Config.SERVER_FLIGHT_OPT_IN.get()));
-        }
     }
 }
