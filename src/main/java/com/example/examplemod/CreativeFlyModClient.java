@@ -9,6 +9,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
@@ -35,66 +36,68 @@ public class CreativeFlyModClient {
     private static final double BASE_DISTANCE_PER_TICK = 7.0D;
     private static final double SPRINT_MULTIPLIER = 1.75D;
     private static final float SPEED_COMPARE_EPSILON = 0.0001F;
+        private static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category.register(
+            Identifier.fromNamespaceAndPath(CreativeFlyMod.MODID, "creativeflymod"));
 
     private static final KeyMapping TOGGLE_FLIGHT = new KeyMapping(
             "key.creativeflymod.toggle_flight",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_K,
-            "key.categories.creativeflymod");
+            KEY_CATEGORY);
 
     private static final KeyMapping SPEED_DOWN = new KeyMapping(
             "key.creativeflymod.speed_down",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_UNKNOWN,
-            "key.categories.creativeflymod");
+            KEY_CATEGORY);
 
     private static final KeyMapping SPEED_UP = new KeyMapping(
             "key.creativeflymod.speed_up",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_UNKNOWN,
-            "key.categories.creativeflymod");
+            KEY_CATEGORY);
 
     private static final KeyMapping SPEED_RESET = new KeyMapping(
             "key.creativeflymod.speed_reset",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_R,
-            "key.categories.creativeflymod");
+            KEY_CATEGORY);
 
     private static final KeyMapping OPEN_PROFILES = new KeyMapping(
             "key.creativeflymod.open_profiles",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_O,
-            "key.categories.creativeflymod");
+            KEY_CATEGORY);
 
         private static final KeyMapping PROFILE_1 = new KeyMapping(
             "key.creativeflymod.profile_1",
             InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_UNKNOWN,
-            "key.categories.creativeflymod");
+            KEY_CATEGORY);
 
         private static final KeyMapping PROFILE_2 = new KeyMapping(
             "key.creativeflymod.profile_2",
             InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_UNKNOWN,
-            "key.categories.creativeflymod");
+            KEY_CATEGORY);
 
         private static final KeyMapping PROFILE_3 = new KeyMapping(
             "key.creativeflymod.profile_3",
             InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_UNKNOWN,
-            "key.categories.creativeflymod");
+            KEY_CATEGORY);
 
             private static final KeyMapping CYCLE_PROFILE_FORWARD = new KeyMapping(
                 "key.creativeflymod.cycle_profile_forward",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_UNKNOWN,
-                "key.categories.creativeflymod");
+                KEY_CATEGORY);
 
             private static final KeyMapping CYCLE_PROFILE_BACKWARD = new KeyMapping(
                 "key.creativeflymod.cycle_profile_backward",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_UNKNOWN,
-                "key.categories.creativeflymod");
+                KEY_CATEGORY);
 
     private static boolean flyModEnabled = false;
     private static boolean creativeFlightEnabled = false;

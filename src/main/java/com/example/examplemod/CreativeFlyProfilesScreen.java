@@ -15,6 +15,9 @@ public class CreativeFlyProfilesScreen extends Screen {
     private EditBox profileNameBox;
     private SpeedSlider speedSlider;
     private Button autoArmToggleButton;
+    private Button profile1Button;
+    private Button profile2Button;
+    private Button profile3Button;
     private int selectedProfileIndex;
 
     protected CreativeFlyProfilesScreen(Screen parent) {
@@ -31,15 +34,15 @@ public class CreativeFlyProfilesScreen extends Screen {
         int y = 46;
         int buttonWidth = 98;
 
-        addRenderableWidget(Button.builder(Component.empty(), button -> selectProfile(0))
+        profile1Button = addRenderableWidget(Button.builder(Component.empty(), button -> selectProfile(0))
                 .bounds(centerX - 154, y, buttonWidth, 20)
                 .build());
 
-        addRenderableWidget(Button.builder(Component.empty(), button -> selectProfile(1))
+        profile2Button = addRenderableWidget(Button.builder(Component.empty(), button -> selectProfile(1))
                 .bounds(centerX - 50, y, buttonWidth, 20)
                 .build());
 
-        addRenderableWidget(Button.builder(Component.empty(), button -> selectProfile(2))
+        profile3Button = addRenderableWidget(Button.builder(Component.empty(), button -> selectProfile(2))
                 .bounds(centerX + 54, y, buttonWidth, 20)
                 .build());
 
@@ -74,6 +77,7 @@ public class CreativeFlyProfilesScreen extends Screen {
 
     private void onNameChanged(String value) {
         FlyProfileManager.setProfileName(selectedProfileIndex, value);
+        updateProfileButtonLabels();
         FlyProfileManager.save();
     }
 
@@ -81,6 +85,19 @@ public class CreativeFlyProfilesScreen extends Screen {
         FlyProfileManager.FlyProfile profile = FlyProfileManager.getProfile(selectedProfileIndex);
         profileNameBox.setValue(profile.name());
         speedSlider.setSpeed(profile.speed());
+        updateProfileButtonLabels();
+    }
+
+    private void updateProfileButtonLabels() {
+        profile1Button.setMessage(createProfileButtonLabel(0));
+        profile2Button.setMessage(createProfileButtonLabel(1));
+        profile3Button.setMessage(createProfileButtonLabel(2));
+    }
+
+    private Component createProfileButtonLabel(int index) {
+        FlyProfileManager.FlyProfile profile = FlyProfileManager.getProfile(index);
+        String prefix = index == selectedProfileIndex ? "> " : "";
+        return Component.literal(prefix + (index + 1) + ": " + profile.name());
     }
 
     private void onDone() {
@@ -107,7 +124,6 @@ public class CreativeFlyProfilesScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(guiGraphics, mouseX, mouseY, partialTick);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         int centerX = width / 2;
@@ -116,17 +132,6 @@ public class CreativeFlyProfilesScreen extends Screen {
         guiGraphics.drawString(font, Component.translatable("screen.creativeflymod.profiles.name"), centerX - 100, 80, 0xA0A0A0);
         guiGraphics.drawString(font, Component.translatable("screen.creativeflymod.profiles.speed"), centerX - 100, 114, 0xA0A0A0);
         guiGraphics.drawString(font, Component.translatable("screen.creativeflymod.profiles.auto_arm_hint"), centerX - 100, 146, 0xA0A0A0);
-
-        drawProfileButtonLabel(guiGraphics, centerX - 154, 46, 0);
-        drawProfileButtonLabel(guiGraphics, centerX - 50, 46, 1);
-        drawProfileButtonLabel(guiGraphics, centerX + 54, 46, 2);
-    }
-
-    private void drawProfileButtonLabel(GuiGraphics guiGraphics, int x, int y, int index) {
-        FlyProfileManager.FlyProfile profile = FlyProfileManager.getProfile(index);
-        int color = index == selectedProfileIndex ? 0xFFFF55 : 0xFFFFFF;
-        String label = String.format("%d: %s", index + 1, profile.name());
-        guiGraphics.drawCenteredString(font, label, x + 49, y + 6, color);
     }
 
     private final class SpeedSlider extends AbstractSliderButton {
